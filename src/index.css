@@ -1,0 +1,90 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* White */
+    --foreground: 240 10% 3.9%; /* Neutral Dark Gray */
+
+    --muted: 240 4.8% 95.9%; /* Neutral Light Gray */
+    --muted-foreground: 240 3.8% 46.1%; /* Neutral Medium Gray */
+
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 240 10% 3.9%; /* Neutral Dark Gray */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 240 10% 3.9%; /* Neutral Dark Gray */
+
+    --border: 240 5.9% 90%; /* Neutral Gray Border */
+    --input: 240 5.9% 90%; /* Neutral Gray Input Border */
+
+    --primary: 187 61% 35%; /* Neutral Dark Blue/Gray */
+    --primary-foreground: 0 0% 98%; /* Almost White */
+
+    --secondary: 240 4.8% 95.9%; /* Neutral Light Gray */
+    --secondary-foreground: 240 5.9% 10%; /* Neutral Dark Blue/Gray */
+
+    --accent: 240 4.8% 95.9%; /* Neutral Light Gray */
+    --accent-foreground: 240 5.9% 10%; /* Neutral Dark Blue/Gray */
+
+    --destructive: 0 72.2% 50.6%; /* Red */
+    --destructive-foreground: 0 0% 98%; /* Almost White */
+
+    --ring: 240 5% 64.9%; /* Neutral Medium Gray Ring */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-inter;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .container {
+    @apply px-4 md:px-6 max-w-7xl mx-auto;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
