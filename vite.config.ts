@@ -1,8 +1,8 @@
-import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import { createLogger, defineConfig } from 'vite';
+import path from 'node:path';
+import { createLogger, defineConfig, type Plugin } from 'vite';
 
-const configHorizonsViteErrorHandler = `
+const configHorizonsViteErrorHandler: string = `
 const observer = new MutationObserver((mutations) => {
 	for (const mutation of mutations) {
 		for (const addedNode of mutation.addedNodes) {
@@ -49,7 +49,7 @@ function handleViteOverlay(node) {
 }
 `;
 
-const configHorizonsRuntimeErrorHandler = `
+const configHorizonsRuntimeErrorHandler: string = `
 window.onerror = (message, source, lineno, colno, errorObj) => {
 	const errorDetails = errorObj ? JSON.stringify({
 		name: errorObj.name,
@@ -68,7 +68,7 @@ window.onerror = (message, source, lineno, colno, errorObj) => {
 };
 `;
 
-const configHorizonsConsoleErrroHandler = `
+const configHorizonsConsoleErrroHandler: string = `
 const originalConsoleError = console.error;
 console.error = function(...args) {
 	originalConsoleError.apply(console, args);
@@ -94,7 +94,7 @@ console.error = function(...args) {
 };
 `;
 
-const configWindowFetchMonkeyPatch = `
+const configWindowFetchMonkeyPatch: string = `
 const originalFetch = window.fetch;
 
 window.fetch = function(...args) {
@@ -133,9 +133,9 @@ window.fetch = function(...args) {
 };
 `;
 
-const addTransformIndexHtml = {
+const addTransformIndexHtml: Plugin = {
 	name: 'add-transform-index-html',
-	transformIndexHtml(html) {
+	transformIndexHtml(html: string) {
 		return {
 			html,
 			tags: [
@@ -173,7 +173,7 @@ console.warn = () => {};
 const logger = createLogger()
 const loggerError = logger.error
 
-logger.error = (msg, options) => {
+logger.error = (msg: string, options?: { error?: Error }) => {
 	if (options?.error?.toString().includes('CssSyntaxError: [postcss]')) {
 		return;
 	}
