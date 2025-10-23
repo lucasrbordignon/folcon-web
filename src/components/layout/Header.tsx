@@ -1,14 +1,20 @@
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { motion } from 'framer-motion';
+import { Bell, LogOut, Search, Settings, User } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Search, Settings, User, LogOut, Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { motion } from 'framer-motion';
 
-const Header = ({ user, onLogout }) => {
+interface HeaderProps {
+  user: SupabaseUser | null;
+  onLogout: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   const userEmail = user?.email || "Usuário";
   const userInitial = userEmail.charAt(0).toUpperCase();
 

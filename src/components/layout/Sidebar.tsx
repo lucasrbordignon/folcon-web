@@ -1,13 +1,24 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Package, CheckSquare, Settings, LogOut, BarChart3, Contact } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { User } from '@supabase/supabase-js';
 import { motion } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BarChart3, CheckSquare, Contact, Home, LogOut, LucideIcon, Package, Settings, Users } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
-const navItems = [
+interface SidebarProps {
+  user: User | null;
+  onLogout: () => void;
+}
+
+interface NavItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+const navItems: NavItem[] = [
   { to: "/", icon: Home, label: "Dashboard" },
   { to: "/clients", icon: Users, label: "Clientes" },
   { to: "/contacts", icon: Contact, label: "Contatos" },
@@ -15,7 +26,7 @@ const navItems = [
   { to: "/tasks", icon: CheckSquare, label: "Tarefas" },
 ];
 
-const Sidebar = ({ onLogout, user }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onLogout, user }) => {
   const location = useLocation();
   const userEmail = user?.email || "Usuário";
   const userInitial = userEmail.charAt(0).toUpperCase();

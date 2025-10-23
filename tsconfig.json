@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "es2022",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
 
@@ -16,9 +17,13 @@
 
     "noEmit": true,
 
+    "allowJs": true,
+    "checkJs": false,
+
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"],
   "references": [

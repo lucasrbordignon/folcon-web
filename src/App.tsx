@@ -1,25 +1,26 @@
 
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { useEffect, useState } from "react";
+import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
-import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
 import ClientsPage from "@/pages/ClientsPage";
 import ContactsPage from "@/pages/ContactsPage";
-import ProductsPage from "@/pages/ProductsPage";
-import TasksPage from "@/pages/TasksPage";
-import SettingsPage from "@/pages/SettingsPage";
+import DashboardPage from "@/pages/DashboardPage";
+import LoginPage from "@/pages/LoginPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import ProductsPage from "@/pages/ProductsPage";
+import SettingsPage from "@/pages/SettingsPage";
+import TasksPage from "@/pages/TasksPage";
 
-import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import Sidebar from "@/components/layout/Sidebar";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 function App() {
-  const [session, setSession] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,7 +33,7 @@ function App() {
     getSession();
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (_event: AuthChangeEvent, session: Session | null) => {
         setSession(session);
         if (_event === 'SIGNED_IN' && session) {
           toast({ title: "Login bem-sucedido!", description: "Bem-vindo de volta." });
