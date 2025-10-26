@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { useTheme } from "@/theme/ThemeProvider";
 import type { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { UploadCloud } from "lucide-react";
@@ -30,7 +31,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (user) {
@@ -141,21 +142,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
     } finally {
       setUploading(false);
     }
-  };
-
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const activeTheme = (storedTheme as "light" | "dark") || (prefersDark ? "dark" : "light");
-    setTheme(activeTheme);
-    document.documentElement.classList.toggle("dark", activeTheme === "dark");
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
   return (
@@ -302,21 +288,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
                   <div className="flex items-center gap-2">
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
-                      onClick={() => {
-                        setTheme("light");
-                        localStorage.setItem("theme", "light");
-                        document.documentElement.classList.remove("dark");
-                      }}
+                      onClick={() => toggleTheme("light")}
                     >
                       Claro
                     </Button>
                     <Button
                       variant={theme === "dark" ? "default" : "outline"}
-                      onClick={() => {
-                        setTheme("dark");
-                        localStorage.setItem("theme", "dark");
-                        document.documentElement.classList.add("dark");
-                      }}
+                      onClick={() => toggleTheme("dark")}
                     >
                       Escuro
                     </Button>
@@ -330,9 +308,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user }) => {
                     onClick={() => {
                       localStorage.removeItem("theme");
                       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                      const systemTheme = prefersDark ? "dark" : "light";
-                      setTheme(systemTheme);
-                      document.documentElement.classList.toggle("dark", systemTheme === "dark");
+                      toggleTheme(prefersDark ? "dark" : "light");
                     }}
                   >
                     Usar preferências do sistema
