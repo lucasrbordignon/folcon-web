@@ -1,5 +1,7 @@
 
-import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -8,12 +10,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
 
-const DataTable = ({
+interface DataTableProps {
+  columns: Array<{
+    accessorKey: string;
+    header: string;
+    cell?: (info: { row: { original: any } }) => React.ReactNode;
+  }>;
+  data: Array<any>;
+  onEdit?: (row: any) => void;
+  onDelete?: (row: any) => void;
+  filterColumn?: string;
+  columnVisibility?: Record<string, boolean>;
+}
+
+type ColumnVisibilityState = Record<string, boolean>;
+
+const DataTable: React.FC<DataTableProps> = ({
   columns,
   data,
   onEdit,
@@ -22,11 +37,11 @@ const DataTable = ({
   columnVisibility = {}
 }) => {
   const [filter, setFilter] = useState('');
-  const [internalColumnVisibility, setInternalColumnVisibility] = useState(
+  const [internalColumnVisibility, setInternalColumnVisibility] = useState<ColumnVisibilityState>(
     columns.reduce((acc, col) => {
       acc[col.accessorKey] = columnVisibility[col.accessorKey] !== undefined ? columnVisibility[col.accessorKey] : true;
       return acc;
-    }, {})
+    }, {} as ColumnVisibilityState)
   );
 
   const filteredData = data.filter((item) => {

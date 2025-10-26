@@ -7,16 +7,23 @@ import {
 	ToastViewport,
 } from '@/components/ui/toast';
 import { useToast } from '@/components/ui/use-toast';
-import React from 'react';
+
+interface ToasterProviderProps extends React.HTMLAttributes<HTMLDivElement> {
+	id?: string;
+	title?: string;
+	description?: string;
+	action?: React.ReactNode;
+}
+
 
 export function Toaster() {
 	const { toasts } = useToast();
 
 	return (
 		<ToastProvider>
-			{toasts.map(({ id, title, description, action, ...props }) => {
+			{toasts.map(({ id, title, description, action }: ToasterProviderProps) => {
 				return (
-					<Toast key={id} {...props}>
+					<Toast key={id}>
 						<div className="grid gap-1">
 							{title && <ToastTitle>{title}</ToastTitle>}
 							{description && (
