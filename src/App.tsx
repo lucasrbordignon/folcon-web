@@ -17,6 +17,7 @@ import TasksPage from "@/pages/TasksPage";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { ThemeProvider } from "./theme/ThemeProvider";
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -70,48 +71,50 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="flex min-h-screen bg-muted/40">
-        {isAuthenticated && <Sidebar onLogout={handleLogout} user={session?.user} />}
-        <div className="flex-1 flex flex-col">
-          {isAuthenticated && <Header user={session?.user} onLogout={handleLogout}/>}
-          <main className={`flex-1 p-4 sm:p-6 lg:p-8 overflow-auto ${!isAuthenticated ? 'h-screen flex items-center justify-center' : ''}`}>
-            <Routes>
-              <Route 
-                path="/login" 
-                element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} 
-              />
-              <Route 
-                path="/" 
-                element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} 
-              />
-              <Route 
-                path="/clients" 
-                element={isAuthenticated ? <ClientsPage /> : <Navigate to="/login" />} 
-              />
-              <Route 
-                path="/contacts" 
-                element={isAuthenticated ? <ContactsPage /> : <Navigate to="/login" />} 
-              />
-              <Route 
-                path="/products" 
-                element={isAuthenticated ? <ProductsPage /> : <Navigate to="/login" />} 
-              />
-              <Route 
-                path="/tasks" 
-                element={isAuthenticated ? <TasksPage /> : <Navigate to="/login" />} 
-              />
-              <Route 
-                path="/settings" 
-                element={isAuthenticated ? <SettingsPage user={session?.user} /> : <Navigate to="/login" />} 
-              />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
+    <ThemeProvider>
+      <Router>
+        <div className="flex min-h-screen bg-muted/40">
+          {isAuthenticated && <Sidebar onLogout={handleLogout} user={session?.user} />}
+          <div className="flex-1 flex flex-col">
+            {isAuthenticated && <Header user={session?.user} onLogout={handleLogout}/>}
+            <main className={`flex-1 p-4 sm:p-6 lg:p-8 overflow-auto ${!isAuthenticated ? 'h-screen flex items-center justify-center' : ''}`}>
+              <Routes>
+                <Route 
+                  path="/login" 
+                  element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} 
+                />
+                <Route 
+                  path="/" 
+                  element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} 
+                />
+                <Route 
+                  path="/clients" 
+                  element={isAuthenticated ? <ClientsPage /> : <Navigate to="/login" />} 
+                />
+                <Route 
+                  path="/contacts" 
+                  element={isAuthenticated ? <ContactsPage /> : <Navigate to="/login" />} 
+                />
+                <Route 
+                  path="/products" 
+                  element={isAuthenticated ? <ProductsPage /> : <Navigate to="/login" />} 
+                />
+                <Route 
+                  path="/tasks" 
+                  element={isAuthenticated ? <TasksPage /> : <Navigate to="/login" />} 
+                />
+                <Route 
+                  path="/settings" 
+                  element={isAuthenticated ? <SettingsPage user={session?.user} /> : <Navigate to="/login" />} 
+                />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </main>
+          </div>
         </div>
-      </div>
-      <Toaster />
-    </Router>
+        <Toaster />
+      </Router>
+    </ThemeProvider>
   );
 }
 
