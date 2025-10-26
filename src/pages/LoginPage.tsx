@@ -1,21 +1,27 @@
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from '@/lib/supabaseClient';
-import { motion } from 'framer-motion';
-import { Lock, LogIn, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { supabase } from "@/lib/supabaseClient";
+import { motion } from "framer-motion";
+import { Lock, LogIn, Mail } from "lucide-react";
+import React, { FormEvent, useState } from "react";
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -28,10 +34,10 @@ const LoginPage = () => {
       setIsLoading(false);
       return;
     }
-    
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+      email,
+      password,
     });
 
     if (error) {
@@ -40,14 +46,20 @@ const LoginPage = () => {
         description: error.message || "E-mail ou senha inválidos.",
         variant: "destructive",
       });
+    } else {
+      toast({
+        title: "Login bem-sucedido!",
+        description: "Bem-vindo de volta.",
+        variant: "default",
+      });
     }
-    // Auth state change will handle successful login toast via App.jsx
-    
+
     setIsLoading(false);
   };
 
   const handleMagicLink = async () => {
     setIsLoading(true);
+
     if (!email) {
       toast({
         title: "E-mail Necessário",
@@ -59,9 +71,9 @@ const LoginPage = () => {
     }
 
     const { error } = await supabase.auth.signInWithOtp({
-      email: email,
+      email,
       options: {
-        emailRedirectTo: window.location.origin, 
+        emailRedirectTo: window.location.origin,
       },
     });
 
@@ -77,12 +89,12 @@ const LoginPage = () => {
         description: "Verifique seu e-mail para o link de login.",
       });
     }
+
     setIsLoading(false);
   };
 
-
   return (
-    <motion.div 
+    <motion.div
       className="flex items-center justify-center min-h-screen p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -90,17 +102,26 @@ const LoginPage = () => {
     >
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-          <motion.div 
-            initial={{ scale: 0 }} 
-            animate={{ scale: 1 }} 
-            transition={{ delay: 0.2, type: "spring", stiffness: 260, damping: 20 }}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{
+              delay: 0.2,
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+            }}
             className="mx-auto mb-4 p-3 bg-primary text-primary-foreground rounded-full w-fit"
           >
             <LogIn className="h-8 w-8" />
           </motion.div>
-          <CardTitle className="text-3xl font-bold">Bem-vindo ao Fol&Con</CardTitle>
+
+          <CardTitle className="text-3xl font-bold">
+            Bem-vindo ao Fol&Con
+          </CardTitle>
           <CardDescription>Faça login para acessar seu painel.</CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -118,6 +139,8 @@ const LoginPage = () => {
                 />
               </div>
             </div>
+
+            {/* Campo de senha */}
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <div className="relative">
@@ -133,19 +156,26 @@ const LoginPage = () => {
                 />
               </div>
             </div>
+
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
+
+          {/* Botão de login com link mágico */}
           <div className="mt-4 text-center">
             <Button variant="link" onClick={handleMagicLink} disabled={isLoading}>
-              {isLoading ? 'Enviando...' : 'Entrar com Link Mágico'}
+              {isLoading ? "Enviando..." : "Entrar com Link Mágico"}
             </Button>
           </div>
         </CardContent>
+
         <CardFooter className="flex flex-col items-center text-sm">
           <p className="text-muted-foreground">
-            Não tem uma conta? <a href="#" className="text-primary hover:underline">Contate o suporte</a>
+            Não tem uma conta?{" "}
+            <a href="#" className="text-primary hover:underline">
+              Contate o suporte
+            </a>
           </p>
           <p className="mt-4 text-xs text-muted-foreground">
             © {new Date().getFullYear()} CRM Pro. Todos os direitos reservados.

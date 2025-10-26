@@ -1,34 +1,45 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import ConfirmationDialog from '@/components/ConfirmationDialog';
+import DataTable from '@/components/DataTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
-import { useToast } from "@/components/ui/use-toast";
-import DataTable from '@/components/DataTable';
-import ConfirmationDialog from '@/components/ConfirmationDialog';
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/lib/supabaseClient';
+import { Database } from '@/types/database';
+import { motion } from 'framer-motion';
+import { PlusCircle } from 'lucide-react';
+import React, { ChangeEvent, FC, useCallback, useEffect, useState } from 'react';
 
-const ProductsPage = () => {
-  const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({ name: '', description: '', price: '', type: 'product' });
-  const [deleteProductId, setDeleteProductId] = useState(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+type ProductType = 'product' | 'service';
+
+type Product = Database['public']['Tables']['products']['Row'];
+
+interface FormData {
+  name: string;
+  description: string;
+  price: string;
+  type: ProductType;
+}
+
+const ProductsPage: FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formData, setFormData] = useState<FormData>({ name: '', description: '', price: '', type: 'product' });
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchProducts = useCallback(async () => {
@@ -49,7 +60,7 @@ const ProductsPage = () => {
     if (error) {
       toast({ title: "Erro ao buscar produtos/serviços", description: error.message, variant: "destructive" });
     } else {
-      setProducts(data);
+      setProducts(data || []);
     }
     setIsLoading(false);
   }, [toast]);
@@ -58,16 +69,16 @@ const ProductsPage = () => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (value) => {
+  const handleSelectChange = (value: ProductType) => {
     setFormData(prev => ({ ...prev, type: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -98,13 +109,18 @@ const ProductsPage = () => {
     setIsLoading(false);
   };
 
-  const handleEdit = (product) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
-    setFormData({ name: product.name, description: product.description || '', price: product.price || '', type: product.type || 'product' });
+    setFormData({ 
+      name: product.name, 
+      description: product.description || '', 
+      price: product.price !== null && product.price !== undefined ? product.price.toString() : '', 
+      type: (product.type === 'product' || product.type === 'service') ? product.type : 'product'
+    });
     setIsSheetOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setDeleteProductId(id);
     setIsConfirmDialogOpen(true);
   };
@@ -125,9 +141,9 @@ const ProductsPage = () => {
 
   const columns = [
     { accessorKey: 'name', header: 'Nome' },
-    { accessorKey: 'type', header: 'Tipo', cell: ({ row }) => row.original.type === 'product' ? 'Produto' : 'Serviço' },
-    { accessorKey: 'price', header: 'Preço', cell: ({ row }) => `R$ ${Number(row.original.price).toFixed(2)}` },
-    { accessorKey: 'description', header: 'Descrição', cell: ({row}) => <p className="truncate max-w-xs">{row.original.description}</p> },
+    { accessorKey: 'type', header: 'Tipo', cell: ({ row }: any) => row.original.type === 'product' ? 'Produto' : 'Serviço' },
+    { accessorKey: 'price', header: 'Preço', cell: ({ row }: any) => `R$ ${Number(row.original.price).toFixed(2)}` },
+    { accessorKey: 'description', header: 'Descrição', cell: ({ row }: any) => <p className="truncate max-w-xs">{row.original.description}</p> },
   ];
 
   return (

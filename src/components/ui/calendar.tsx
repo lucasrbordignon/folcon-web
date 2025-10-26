@@ -30,6 +30,7 @@ export function Calendar<T extends ModeProps = DayPickerDefaultProps>({
   className,
   classNames,
   showOutsideDays = true,
+  mode,
   ...props
 }: CalendarProps<T>) {
   return (

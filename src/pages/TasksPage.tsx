@@ -1,39 +1,59 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import ConfirmationDialog from '@/components/ConfirmationDialog';
+import DataTable from '@/components/DataTable';
 import { Button } from '@/components/ui/button';
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { PlusCircle, CalendarPlus as CalendarIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
-import { useToast } from "@/components/ui/use-toast";
-import DataTable from '@/components/DataTable';
-import ConfirmationDialog from '@/components/ConfirmationDialog';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/lib/supabaseClient';
+import { Database } from '@/types/database';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { motion } from 'framer-motion';
+import { CalendarPlus as CalendarIcon, PlusCircle } from 'lucide-react';
+import React, { ChangeEvent, FC, useCallback, useEffect, useState } from 'react';
+import { DayPickerSingleProps } from 'react-day-picker';
 
-const TasksPage = () => {
-  const [tasks, setTasks] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
-  const [formData, setFormData] = useState({ title: '', description: '', due_date: null, status: 'pending', priority: 'medium', client_id: null });
-  const [deleteTaskId, setDeleteTaskId] = useState(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+type Task = Database['public']['Tables']['tasks']['Row'];
+type Client = Database['public']['Tables']['clients']['Row'];
+
+interface FormData {
+  title: Task['title'];
+  description: Task['description'];
+  due_date: Task['due_date'] | undefined;
+  status: Task['status'] | null;
+  priority: Task['priority'];
+  client_id: Client['id'] | null;
+}
+
+const TasksPage: FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [formData, setFormData] = useState<FormData>({
+    title: '',
+    description: '',
+    due_date: null,
+    status: 'pending',
+    priority: 'medium',
+    client_id: null,
+  });
+  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchTasksAndClients = useCallback(async () => {
@@ -46,20 +66,27 @@ const TasksPage = () => {
     }
 
     const [tasksResponse, clientsResponse] = await Promise.all([
-      supabase.from('tasks').select('*, clients (id, name)').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('clients').select('id, name').eq('user_id', user.id)
+      supabase
+        .from('tasks')
+        .select('*, clients (id, name)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('clients')
+        .select('*')
+        .eq('user_id', user.id),
     ]);
 
     if (tasksResponse.error) {
       toast({ title: "Erro ao buscar tarefas", description: tasksResponse.error.message, variant: "destructive" });
     } else {
-      setTasks(tasksResponse.data);
+      setTasks(tasksResponse.data || []);
     }
 
     if (clientsResponse.error) {
-      toast({ title: "Erro ao buscar clientes para tarefas", description: clientsResponse.error.message, variant: "destructive" });
+      toast({ title: "Erro ao buscar clientes", description: clientsResponse.error.message, variant: "destructive" });
     } else {
-      setClients(clientsResponse.data);
+      setClients(clientsResponse.data || []);
     }
     setIsLoading(false);
   }, [toast]);
@@ -68,22 +95,23 @@ const TasksPage = () => {
     fetchTasksAndClients();
   }, [fetchTasksAndClients]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleDateChange = (date) => {
-    setFormData(prev => ({ ...prev, due_date: date }));
-  };
+  const handleDateChange = (date: Date | undefined) => {
+      setFormData(prev => ({ ...prev, due_date: date ? date.toISOString() : null }));
+    };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado.", variant: "destructive" });
@@ -91,8 +119,12 @@ const TasksPage = () => {
       return;
     }
 
-    const taskData = { ...formData, user_id: user.id, client_id: formData.client_id === "null" || formData.client_id === "" ? null : formData.client_id };
-    
+    const taskData = {
+      ...formData,
+      user_id: user.id,
+      client_id: formData.client_id === "null" || formData.client_id === "" ? null : formData.client_id,
+    };
+
     let error;
     if (editingTask) {
       ({ error } = await supabase.from('tasks').update(taskData).eq('id', editingTask.id));
@@ -112,20 +144,20 @@ const TasksPage = () => {
     setIsLoading(false);
   };
 
-  const handleEdit = (task) => {
+  const handleEdit = (task: Task) => {
     setEditingTask(task);
-    setFormData({ 
-      title: task.title, 
-      description: task.description || '', 
-      due_date: task.due_date ? new Date(task.due_date) : null, 
-      status: task.status || 'pending', 
+    setFormData({
+      title: task.title,
+      description: task.description || '',
+      due_date: task.due_date ? new Date(task.due_date).toString() : null,
+      status: task.status || 'pending',
       priority: task.priority || 'medium',
-      client_id: task.client_id || null
+      client_id: task.client_id || null,
     });
     setIsSheetOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setDeleteTaskId(id);
     setIsConfirmDialogOpen(true);
   };
@@ -144,15 +176,15 @@ const TasksPage = () => {
     setIsLoading(false);
   };
 
-  const statusMap = { pending: 'Pendente', in_progress: 'Em Progresso', completed: 'Concluída' };
-  const priorityMap = { low: 'Baixa', medium: 'Média', high: 'Alta' };
+  const statusMap: Record<string, string> = { pending: 'Pendente', in_progress: 'Em Progresso', completed: 'Concluída' };
+  const priorityMap: Record<string, string> = { low: 'Baixa', medium: 'Média', high: 'Alta' };
 
   const columns = [
     { accessorKey: 'title', header: 'Título' },
-    { accessorKey: 'clients.name', header: 'Cliente', cell: ({row}) => row.original.clients?.name || '-' },
-    { accessorKey: 'due_date', header: 'Prazo', cell: ({row}) => row.original.due_date ? format(new Date(row.original.due_date), 'dd/MM/yyyy') : '-' },
-    { accessorKey: 'status', header: 'Status', cell: ({row}) => statusMap[row.original.status] || row.original.status },
-    { accessorKey: 'priority', header: 'Prioridade', cell: ({row}) => priorityMap[row.original.priority] || row.original.priority },
+    { accessorKey: 'clients.name', header: 'Cliente', cell: ({ row }: any) => row.original.clients?.name || '-' },
+    { accessorKey: 'due_date', header: 'Prazo', cell: ({ row }: any) => row.original.due_date ? format(new Date(row.original.due_date), 'dd/MM/yyyy') : '-' },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }: any) => statusMap[row.original.status] || row.original.status },
+    { accessorKey: 'priority', header: 'Prioridade', cell: ({ row }: any) => priorityMap[row.original.priority] || row.original.priority },
   ];
 
   return (
@@ -216,24 +248,24 @@ const TasksPage = () => {
             </div>
             <div>
               <Label htmlFor="description">Descrição</Label>
-              <Textarea id="description" name="description" value={formData.description} onChange={handleInputChange} />
+              <Textarea id="description" name="description" value={formData.description ?? ''} onChange={handleInputChange} />
             </div>
             <div>
               <Label htmlFor="due_date">Prazo</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={"outline"}
+                    variant="outline"
                     className={`w-full justify-start text-left font-normal ${!formData.due_date && "text-muted-foreground"}`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.due_date ? format(formData.due_date, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
+                    {formData.due_date ? format(new Date(formData.due_date), "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
+                  <Calendar<DayPickerSingleProps>
                     mode="single"
-                    selected={formData.due_date}
+                    selected={new Date(formData.due_date!)}
                     onSelect={handleDateChange}
                     initialFocus
                     locale={ptBR}
@@ -244,7 +276,7 @@ const TasksPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select onValueChange={(value) => handleSelectChange('status', value)} defaultValue={formData.status}>
+                <Select onValueChange={(value) => handleSelectChange('status', value)} value={formData.status ?? "pending"}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o status" />
                   </SelectTrigger>
@@ -257,7 +289,7 @@ const TasksPage = () => {
               </div>
               <div>
                 <Label htmlFor="priority">Prioridade</Label>
-                <Select onValueChange={(value) => handleSelectChange('priority', value)} defaultValue={formData.priority}>
+                <Select onValueChange={(value) => handleSelectChange('priority', value)} value={formData.priority ?? "medium"}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a prioridade" />
                   </SelectTrigger>

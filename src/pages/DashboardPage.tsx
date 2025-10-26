@@ -1,11 +1,34 @@
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { motion } from "framer-motion";
+import {
+  Briefcase,
+  CheckSquare,
+  DollarSign,
+  LucideIcon,
+  Users,
+} from "lucide-react";
+import React from "react";
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Briefcase, DollarSign, CheckSquare } from 'lucide-react';
-import { motion } from 'framer-motion';
+interface StatCardProps {
+  title: string;
+  value: string;
+  icon: LucideIcon;
+  color: string;
+  description: string;
+}
 
-const StatCard = ({ title, value, icon, color, description }) => {
-  const IconComponent = icon;
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  icon: IconComponent,
+  color,
+  description,
+}) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,17 +49,41 @@ const StatCard = ({ title, value, icon, color, description }) => {
   );
 };
 
-const DashboardPage = () => {
-  const stats = [
-    { title: "Total de Clientes", value: "1,234", icon: Users, color: "text-blue-500", description: "+20.1% desde o último mês" },
-    { title: "Novos Leads", value: "320", icon: Briefcase, color: "text-green-500", description: "+15% esta semana" },
-    { title: "Receita Mensal", value: "R$ 45,231.89", icon: DollarSign, color: "text-yellow-500", description: "+5.2% desde o último mês" },
-    { title: "Tarefas Concluídas", value: "573", icon: CheckSquare, color: "text-purple-500", description: "75% de taxa de conclusão" },
+const DashboardPage: React.FC = () => {
+  const stats: StatCardProps[] = [
+    {
+      title: "Total de Clientes",
+      value: "1,234",
+      icon: Users,
+      color: "text-blue-500",
+      description: "+20.1% desde o último mês",
+    },
+    {
+      title: "Novos Leads",
+      value: "320",
+      icon: Briefcase,
+      color: "text-green-500",
+      description: "+15% esta semana",
+    },
+    {
+      title: "Receita Mensal",
+      value: "R$ 45.231,89",
+      icon: DollarSign,
+      color: "text-yellow-500",
+      description: "+5.2% desde o último mês",
+    },
+    {
+      title: "Tarefas Concluídas",
+      value: "573",
+      icon: CheckSquare,
+      color: "text-purple-500",
+      description: "75% de taxa de conclusão",
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <motion.h1 
+      <motion.h1
         className="text-3xl font-bold tracking-tight text-foreground"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -44,7 +91,7 @@ const DashboardPage = () => {
       >
         Dashboard
       </motion.h1>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <motion.div
@@ -69,10 +116,13 @@ const DashboardPage = () => {
               <CardTitle>Atividades Recentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Nenhuma atividade recente para exibir. (Placeholder)</p>
+              <p className="text-muted-foreground">
+                Nenhuma atividade recente para exibir. (Placeholder)
+              </p>
             </CardContent>
           </Card>
         </motion.div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -83,7 +133,9 @@ const DashboardPage = () => {
               <CardTitle>Gráfico de Vendas (Placeholder)</CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] flex items-center justify-center">
-              <p className="text-muted-foreground">Gráfico interativo será implementado aqui.</p>
+              <p className="text-muted-foreground">
+                Gráfico interativo será implementado aqui.
+              </p>
             </CardContent>
           </Card>
         </motion.div>

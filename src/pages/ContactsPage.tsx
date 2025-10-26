@@ -1,40 +1,55 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import ConfirmationDialog from '@/components/ConfirmationDialog';
+import DataTable from '@/components/DataTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
-import { useToast } from "@/components/ui/use-toast";
-import DataTable from '@/components/DataTable';
-import ConfirmationDialog from '@/components/ConfirmationDialog';
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/lib/supabaseClient';
+import { motion } from 'framer-motion';
+import { PlusCircle } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-const ContactsPage = () => {
-  const [contacts, setContacts] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingContact, setEditingContact] = useState(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', company: '', role: '', notes: '', client_id: null });
-  const [deleteContactId, setDeleteContactId] = useState(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+import { Database } from '@/types/database';
+
+type Contact = Database['public']['Tables']['contacts']['Row'];
+type Client = Database['public']['Tables']['clients']['Row'];
+type ContactFormData = Database['public']['Tables']['contacts']['Insert'];
+
+const ContactsPage: React.FC = () => {
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    role: '',
+    notes: '',
+    client_id: null,
+    user_id: '',
+  });
+  const [deleteContactId, setDeleteContactId] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchContactsAndClients = useCallback(async () => {
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado.", variant: "destructive" });
       setIsLoading(false);
@@ -42,21 +57,29 @@ const ContactsPage = () => {
     }
 
     const [contactsResponse, clientsResponse] = await Promise.all([
-      supabase.from('contacts').select('*, clients (id, name)').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('clients').select('id, name').eq('user_id', user.id)
+      supabase
+        .from('contacts')
+        .select('*, clients (id, name)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('clients')
+        .select('id, name')
+        .eq('user_id', user.id)
     ]);
 
     if (contactsResponse.error) {
       toast({ title: "Erro ao buscar contatos", description: contactsResponse.error.message, variant: "destructive" });
-    } else {
-      setContacts(contactsResponse.data);
+    } else if (contactsResponse.data) {
+      setContacts(contactsResponse.data as Contact[]);
     }
 
     if (clientsResponse.error) {
-      toast({ title: "Erro ao buscar clientes para contatos", description: clientsResponse.error.message, variant: "destructive" });
-    } else {
-      setClients(clientsResponse.data);
+      toast({ title: "Erro ao buscar clientes", description: clientsResponse.error.message, variant: "destructive" });
+    } else if (clientsResponse.data) {
+      setClients(clientsResponse.data as Client[]);
     }
+
     setIsLoading(false);
   }, [toast]);
 
@@ -64,26 +87,33 @@ const ContactsPage = () => {
     fetchContactsAndClients();
   }, [fetchContactsAndClients]);
 
-  const handleInputChange = (e) => {
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (value) => {
-    setFormData(prev => ({ ...prev, client_id: value }));
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({ ...prev, client_id: value === "null" ? null : value }));
   };
 
-  const handleSubmit = async (e) => {
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
       toast({ title: "Erro", description: "Usuário não autenticado.", variant: "destructive" });
       setIsLoading(false);
       return;
     }
 
-    const contactData = { ...formData, user_id: user.id, client_id: formData.client_id === "null" || formData.client_id === "" ? null : formData.client_id };
+    const contactData: ContactFormData = {
+      ...formData,
+      user_id: user.id,
+      client_id: formData.client_id === "null" || formData.client_id === "" ? null : formData.client_id,
+    };
 
     let error;
     if (editingContact) {
@@ -98,27 +128,37 @@ const ContactsPage = () => {
       toast({ title: `Contato ${editingContact ? 'atualizado' : 'adicionado'} com sucesso!` });
       setIsSheetOpen(false);
       setEditingContact(null);
-      setFormData({ name: '', email: '', phone: '', company: '', role: '', notes: '', client_id: null });
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        role: '',
+        notes: '',
+        client_id: null,
+        user_id: '',
+      });
       fetchContactsAndClients();
     }
     setIsLoading(false);
   };
 
-  const handleEdit = (contact) => {
+  const handleEdit = (contact: Contact) => {
     setEditingContact(contact);
-    setFormData({ 
-      name: contact.name, 
-      email: contact.email || '', 
-      phone: contact.phone || '', 
-      company: contact.company || '', 
-      role: contact.role || '', 
+    setFormData({
+      name: contact.name,
+      email: contact.email || '',
+      phone: contact.phone || '',
+      company: contact.company || '',
+      role: contact.role || '',
       notes: contact.notes || '',
-      client_id: contact.client_id || null
+      client_id: contact.client_id || null,
+      user_id: contact.user_id,
     });
     setIsSheetOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setDeleteContactId(id);
     setIsConfirmDialogOpen(true);
   };
@@ -127,6 +167,7 @@ const ContactsPage = () => {
     if (!deleteContactId) return;
     setIsLoading(true);
     const { error } = await supabase.from('contacts').delete().eq('id', deleteContactId);
+
     if (error) {
       toast({ title: "Erro ao excluir contato", description: error.message, variant: "destructive" });
     } else {
@@ -143,7 +184,7 @@ const ContactsPage = () => {
     { accessorKey: 'phone', header: 'Telefone' },
     { accessorKey: 'company', header: 'Empresa' },
     { accessorKey: 'role', header: 'Cargo' },
-    { accessorKey: 'clients.name', header: 'Cliente Associado', cell: ({row}) => row.original.clients?.name || '-' },
+    { accessorKey: 'clients.name', header: 'Cliente Associado', cell: ({ row }: any) => row.original.clients?.name || '-' },
   ];
 
   return (
@@ -155,11 +196,26 @@ const ContactsPage = () => {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Contatos</h1>
-        <Button onClick={() => { setEditingContact(null); setFormData({ name: '', email: '', phone: '', company: '', role: '', notes: '', client_id: null }); setIsSheetOpen(true); }}>
+        <Button
+          onClick={() => {
+            setEditingContact(null);
+            setFormData({
+              name: '',
+              email: '',
+              phone: '',
+              company: '',
+              role: '',
+              notes: '',
+              client_id: null,
+              user_id: '',
+            });
+            setIsSheetOpen(true);
+          }}
+        >
           <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Contato
         </Button>
       </motion.div>
-      
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -193,19 +249,19 @@ const ContactsPage = () => {
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} />
+              <Input id="email" name="email" type="email" value={formData.email || ''} onChange={handleInputChange} />
             </div>
             <div>
               <Label htmlFor="phone">Telefone</Label>
-              <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} />
+              <Input id="phone" name="phone" value={formData.phone || ''} onChange={handleInputChange} />
             </div>
             <div>
               <Label htmlFor="company">Empresa</Label>
-              <Input id="company" name="company" value={formData.company} onChange={handleInputChange} />
+              <Input id="company" name="company" value={formData.company || ''} onChange={handleInputChange} />
             </div>
             <div>
               <Label htmlFor="role">Cargo/Função</Label>
-              <Input id="role" name="role" value={formData.role} onChange={handleInputChange} />
+              <Input id="role" name="role" value={formData.role || ''} onChange={handleInputChange} />
             </div>
             <div>
               <Label htmlFor="client_id">Associar ao Cliente (Opcional)</Label>
@@ -216,20 +272,24 @@ const ContactsPage = () => {
                 <SelectContent>
                   <SelectItem value="null">Nenhum</SelectItem>
                   {clients.map(client => (
-                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="notes">Notas</Label>
-              <Textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} />
+              <Textarea id="notes" name="notes" value={formData.notes || ''} onChange={handleInputChange} />
             </div>
             <SheetFooter>
               <SheetClose asChild>
                 <Button type="button" variant="outline">Cancelar</Button>
               </SheetClose>
-              <Button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar Contato'}</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar Contato'}
+              </Button>
             </SheetFooter>
           </form>
         </SheetContent>

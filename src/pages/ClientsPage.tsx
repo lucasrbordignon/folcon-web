@@ -1,32 +1,43 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import ConfirmationDialog from '@/components/ConfirmationDialog';
+import DataTable from '@/components/DataTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
 import { useToast } from "@/components/ui/use-toast";
-import DataTable from '@/components/DataTable';
-import ConfirmationDialog from '@/components/ConfirmationDialog';
+import { supabase } from '@/lib/supabaseClient';
+import { Database } from '@/types/database';
+import { motion } from 'framer-motion';
+import { PlusCircle } from 'lucide-react';
+import React, { ChangeEvent, FormEvent, useCallback, useEffect, useState } from 'react';
+
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
 
-const ClientsPage = () => {
-  const [clients, setClients] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingClient, setEditingClient] = useState(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', company: '', address: '' });
-  const [deleteClientId, setDeleteClientId] = useState(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+type Client = Database['public']['Tables']['clients']['Row'];
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  address: string;
+}
+
+const ClientsPage: React.FC = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [formData, setFormData] = useState<FormData>({ name: '', email: '', phone: '', company: '', address: '' });
+  const [deleteClientId, setDeleteClientId] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchClients = useCallback(async () => {
@@ -47,7 +58,7 @@ const ClientsPage = () => {
     if (error) {
       toast({ title: "Erro ao buscar clientes", description: error.message, variant: "destructive" });
     } else {
-      setClients(data);
+      setClients(data ?? []);
     }
     setIsLoading(false);
   }, [toast]);
@@ -56,12 +67,12 @@ const ClientsPage = () => {
     fetchClients();
   }, [fetchClients]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -92,13 +103,19 @@ const ClientsPage = () => {
     setIsLoading(false);
   };
 
-  const handleEdit = (client) => {
+  const handleEdit = (client: Client) => {
     setEditingClient(client);
-    setFormData({ name: client.name, email: client.email || '', phone: client.phone || '', company: client.company || '', address: client.address || '' });
+    setFormData({
+      name: client.name,
+      email: client.email || '',
+      phone: client.phone || '',
+      company: client.company || '',
+      address: client.address || ''
+    });
     setIsSheetOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setDeleteClientId(id);
     setIsConfirmDialogOpen(true);
   };
@@ -133,7 +150,11 @@ const ClientsPage = () => {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Clientes</h1>
-        <Button onClick={() => { setEditingClient(null); setFormData({ name: '', email: '', phone: '', company: '', address: '' }); setIsSheetOpen(true); }}>
+        <Button onClick={() => { 
+          setEditingClient(null); 
+          setFormData({ name: '', email: '', phone: '', company: '', address: '' }); 
+          setIsSheetOpen(true); 
+        }}>
           <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Cliente
         </Button>
       </motion.div>

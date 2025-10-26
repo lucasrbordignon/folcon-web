@@ -24,6 +24,8 @@ function App() {
   const { toast } = useToast();
 
   useEffect(() => {
+    let isInitialLoad = true;
+
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
@@ -33,15 +35,15 @@ function App() {
     getSession();
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => {
+      (event: AuthChangeEvent, session: Session | null) => {
         setSession(session);
-        if (_event === 'SIGNED_IN' && session) {
-          toast({ title: "Login bem-sucedido!", description: "Bem-vindo de volta." });
-        } else if (_event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           toast({ title: "Logout realizado.", description: "Até logo!" });
         }
       }
     );
+
+    isInitialLoad = false;
 
     return () => {
       authSubscription?.subscription?.unsubscribe();
