@@ -2,7 +2,7 @@
 import { Database } from '@/types/database';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://ntjaryaobhxmhsiyynyy.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50amFyeWFvYmh4bWhzaXl5bnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2NDgxMDQsImV4cCI6MjA2MjIyNDEwNH0._nBr0VrBjxr05mmkZqCrnbLeGBY6h1NtsckyOh_lie0';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
