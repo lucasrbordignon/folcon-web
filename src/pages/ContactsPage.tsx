@@ -40,7 +40,6 @@ const ContactsPage: React.FC = () => {
     role: '',
     notes: '',
     client_id: null,
-    user_id: '',
   });
   const [deleteContactId, setDeleteContactId] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
@@ -59,13 +58,10 @@ const ContactsPage: React.FC = () => {
     const [contactsResponse, clientsResponse] = await Promise.all([
       supabase
         .from('contacts')
-        .select('*, clients (id, name)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }),
+        .select('*, clients (id, name)'),
       supabase
         .from('clients')
         .select('id, name')
-        .eq('user_id', user.id)
     ]);
 
     if (contactsResponse.error) {
@@ -111,7 +107,6 @@ const ContactsPage: React.FC = () => {
 
     const contactData: ContactFormData = {
       ...formData,
-      user_id: user.id,
       client_id: formData.client_id === "null" || formData.client_id === "" ? null : formData.client_id,
     };
 
@@ -136,7 +131,6 @@ const ContactsPage: React.FC = () => {
         role: '',
         notes: '',
         client_id: null,
-        user_id: '',
       });
       fetchContactsAndClients();
     }
@@ -153,7 +147,6 @@ const ContactsPage: React.FC = () => {
       role: contact.role || '',
       notes: contact.notes || '',
       client_id: contact.client_id || null,
-      user_id: contact.user_id,
     });
     setIsSheetOpen(true);
   };
@@ -207,7 +200,6 @@ const ContactsPage: React.FC = () => {
               role: '',
               notes: '',
               client_id: null,
-              user_id: '',
             });
             setIsSheetOpen(true);
           }}

@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Bell, LogOut, Search, Settings, User } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { CompanySelector } from "../ui/company-selector";
 
 interface HeaderProps {
   user: SupabaseUser | null;
@@ -26,9 +27,12 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <div className="md:hidden">
-         {/* Placeholder for mobile menu toggle, if Sidebar is not always visible on mobile */}
+
       </div>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+        <form action="">
+          <CompanySelector />
+        </form>
         <form className="ml-auto flex-1 sm:flex-initial">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { useCompanyStore } from "@/store/companyStore";
 import { motion } from "framer-motion";
 import { Lock, LogIn, Mail } from "lucide-react";
 import React, { FormEvent, useState } from "react";
@@ -19,6 +20,7 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { setCompanies, setActiveCompany } = useCompanyStore();
   const { toast } = useToast();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -35,24 +37,47 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
+    const user = data?.user;
+
+    if (error || !user) {
       toast({
         title: "Falha no Login",
-        description: error.message || "E-mail ou senha inválidos.",
+        description: error?.message || "E-mail ou senha inválidos.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Login bem-sucedido!",
-        description: "Bem-vindo de volta.",
-        variant: "default",
-      });
+      setIsLoading(false);
+      return;
     }
+
+    const { data: companies, error: companyError } = await supabase
+      .from("company_users")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (companyError) {
+      console.error(companyError);
+    } else if (companies) {
+      setCompanies(companies);
+      if (companies.length > 0) {
+        setActiveCompany(companies[0]);
+      }
+    }
+
+    setCompanies(companies || []);
+    if (companies && companies.length > 0) {
+      setActiveCompany(companies[0]); 
+    }
+
+    toast({
+      title: "Login bem-sucedido!",
+      description: "Bem-vindo de volta.",
+      variant: "default",
+    });
 
     setIsLoading(false);
   };
