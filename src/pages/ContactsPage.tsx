@@ -58,13 +58,10 @@ const ContactsPage: React.FC = () => {
     const [contactsResponse, clientsResponse] = await Promise.all([
       supabase
         .from('contacts')
-        .select('*, clients (id, name)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }),
+        .select('*, clients (id, name)'),
       supabase
         .from('clients')
         .select('id, name')
-        .eq('user_id', user.id)
     ]);
 
     if (contactsResponse.error) {

@@ -52,7 +52,6 @@ const ClientsPage: React.FC = () => {
     const { data, error } = await supabase
       .from('clients')
       .select('*')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {

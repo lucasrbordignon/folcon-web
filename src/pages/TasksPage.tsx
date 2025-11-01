@@ -69,12 +69,10 @@ const TasksPage: FC = () => {
       supabase
         .from('tasks')
         .select('*, clients (id, name)')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false }),
       supabase
         .from('clients')
         .select('*')
-        .eq('user_id', user.id),
     ]);
 
     if (tasksResponse.error) {
