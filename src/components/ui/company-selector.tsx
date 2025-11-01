@@ -12,11 +12,17 @@ export function CompanySelector() {
       }}
       className="tracking-tight text-foreground bg-transparent border border-input px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
     >
-      {companies.map((c) => (
-        <option key={c.company_id} value={String(c.company_id)}>
-          {c?.company_name?.toUpperCase() ?? "Nenhuma selecionada"}
+      {companies.length === 0 ? (
+        <option value="" disabled>
+          Nenhuma selecionada
         </option>
-      ))}
+      ) : (
+        companies.map((c) => (
+          <option key={c.company_id} value={String(c.company_id)}>
+            {c?.company_name?.toUpperCase() ?? "Nenhuma selecionada"}
+          </option>
+        ))
+      )}
     </select>
   );
 }
