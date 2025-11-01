@@ -28,26 +28,24 @@ const StatCard: React.FC<StatCardProps> = ({
   icon: IconComponent,
   color,
   description,
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          <IconComponent className={`h-5 w-5 ${color}`} />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{value}</div>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <IconComponent className={`h-5 w-5 ${color}`} />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  </motion.div>
+);
 
 const DashboardPage: React.FC = () => {
   const stats: StatCardProps[] = [
@@ -117,7 +115,7 @@ const DashboardPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Nenhuma atividade recente para exibir. (Placeholder)
+                Nenhuma atividade recente para exibir.
               </p>
             </CardContent>
           </Card>
@@ -130,7 +128,7 @@ const DashboardPage: React.FC = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Gráfico de Vendas (Placeholder)</CardTitle>
+              <CardTitle>Gráfico de Vendas</CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] flex items-center justify-center">
               <p className="text-muted-foreground">
