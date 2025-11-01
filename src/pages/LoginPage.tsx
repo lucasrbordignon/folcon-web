@@ -68,11 +68,6 @@ const LoginPage: React.FC = () => {
       }
     }
 
-    setCompanies(companies || []);
-    if (companies && companies.length > 0) {
-      setActiveCompany(companies[0]); 
-    }
-
     toast({
       title: "Login bem-sucedido!",
       description: "Bem-vindo de volta.",
