@@ -18,6 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
+import { useCompanyStore } from '@/store/companyStore';
 import { Database } from '@/types/database';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -55,6 +56,7 @@ const TasksPage: FC = () => {
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
+  const { activeCompany } = useCompanyStore();
 
   const fetchTasksAndClients = useCallback(async () => {
     setIsLoading(true);
@@ -65,14 +67,22 @@ const TasksPage: FC = () => {
       return;
     }
 
+    if (!activeCompany) {
+      toast({ title: "Erro", description: "Nenhuma empresa ativa selecionada.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
     const [tasksResponse, clientsResponse] = await Promise.all([
       supabase
         .from('tasks')
         .select('*, clients (id, name)')
+        .eq('company_id', activeCompany.company_id || '')
         .order('created_at', { ascending: false }),
       supabase
         .from('clients')
         .select('*')
+        .eq('company_id', activeCompany.company_id || ''),
     ]);
 
     if (tasksResponse.error) {

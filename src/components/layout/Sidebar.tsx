@@ -34,12 +34,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, user }) => {
   return (
     <TooltipProvider delayDuration={0}>
       <motion.aside 
-        className="hidden md:flex md:flex-col md:w-64 bg-card border-r h-screen sticky top-0"
+        className="hidden md:flex md:flex-col md:w-56 bg-card border-r h-screen sticky top-0"
         initial={{ x: -256 }}
         animate={{ x: 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <div className="flex items-center justify-center h-20 border-b px-4">
+        <div className="flex items-center justify-center h-16 border-b px-4">
           <BarChart3 className="h-8 w-8 text-primary" />
           <h1 className="ml-2 text-2xl font-bold text-foreground">CRM Pro</h1>
         </div>

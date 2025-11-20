@@ -20,6 +20,7 @@ import { motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { useCompanyStore } from '@/store/companyStore';
 import { Database } from '@/types/database';
 
 type Contact = Database['public']['Tables']['contacts']['Row'];
@@ -44,6 +45,7 @@ const ContactsPage: React.FC = () => {
   const [deleteContactId, setDeleteContactId] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
+  const { activeCompany } = useCompanyStore()
 
   const fetchContactsAndClients = useCallback(async () => {
     setIsLoading(true);
@@ -55,13 +57,21 @@ const ContactsPage: React.FC = () => {
       return;
     }
 
+    if (!activeCompany) {
+      toast({ title: "Erro", description: "Nenhuma empresa ativa selecionada.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
     const [contactsResponse, clientsResponse] = await Promise.all([
       supabase
-        .from('contacts')
-        .select('*, clients (id, name)'),
+        .from('contacts')        
+        .select('*, clients (id, name)')
+        .eq('company_id', activeCompany.company_id || ''),
       supabase
         .from('clients')
         .select('id, name')
+        .eq('company_id', activeCompany.company_id || '')
     ]);
 
     if (contactsResponse.error) {

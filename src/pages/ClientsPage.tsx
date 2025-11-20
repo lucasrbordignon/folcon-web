@@ -19,6 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useCompanyStore } from '@/store/companyStore';
 
 type Client = Database['public']['Tables']['clients']['Row'];
 
@@ -40,6 +41,8 @@ const ClientsPage: React.FC = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
 
+  const { activeCompany } = useCompanyStore()
+
   const fetchClients = useCallback(async () => {
     setIsLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -49,9 +52,16 @@ const ClientsPage: React.FC = () => {
       return;
     }
 
+    if (!activeCompany) {
+      toast({ title: "Erro", description: "Nenhuma empresa ativa selecionada.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('clients')
       .select('*')
+      .eq('company_id', activeCompany.company_id || '')
       .order('created_at', { ascending: false });
 
     if (error) {

@@ -16,6 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
+import { useCompanyStore } from '@/store/companyStore';
 import { Database } from '@/types/database';
 import { motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
@@ -41,6 +42,7 @@ const ProductsPage: FC = () => {
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
+  const { activeCompany } = useCompanyStore();
 
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
@@ -51,9 +53,16 @@ const ProductsPage: FC = () => {
       return;
     }
 
+    if (!activeCompany) {
+      toast({ title: "Erro", description: "Nenhuma empresa ativa selecionada.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .eq('company_id', activeCompany.company_id || '')
       .order('created_at', { ascending: false });
 
     if (error) {
